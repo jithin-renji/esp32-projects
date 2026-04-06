@@ -6,8 +6,10 @@
 #include "esp_log.h"
 #include "driver/gpio.h"
 
-#define RED_LED     15
-#define BUILTIN_LED 2
+#define MSG          "sos"
+
+#define RED_LED      15
+#define BUILTIN_LED  2
 
 #define DOT_DUR      200
 #define DASH_DUR     800
@@ -64,6 +66,6 @@ void app_main(void)
     gpio_set_direction(BUILTIN_LED, GPIO_MODE_OUTPUT);
 
     while (1) {
-        send_string(tName, "sos");
+        send_string(tName, MSG);
     }
 }
