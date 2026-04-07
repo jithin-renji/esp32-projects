@@ -1,8 +1,6 @@
 #include <stdio.h>
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
 #include "driver/gpio.h"
 
 #define LED_PIN         15
@@ -26,14 +24,19 @@ void app_main(void)
     gpio_config(&io_conf);
 
     int isOn = 0;
+    int prev = 1;
     for (;;) {
-        int level = gpio_get_level(BUTTON_PIN);
-        if (level == 0) {
-            printf("Button pressed setting: %d\n", !gpio_get_level(LED_PIN));
-            isOn = !isOn;
-            gpio_set_level(LED_PIN, isOn);
+        int current = gpio_get_level(BUTTON_PIN);
+
+        if (prev == 1 && current == 0) {
+            vTaskDelay(pdMS_TO_TICKS(50));
+            if (gpio_get_level(BUTTON_PIN) == 0) {
+                isOn = !isOn;
+                gpio_set_level(LED_PIN, isOn);
+            }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(200));
+        prev = current;
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
