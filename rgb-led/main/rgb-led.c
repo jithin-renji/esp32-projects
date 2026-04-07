@@ -69,25 +69,19 @@ void app_main(void)
     gpio_reset_pin(LEDC_RED_IO);
 
     ledc_init();
-    while (1) {
-        for (int chan = 0; chan < 3; chan++) {
-            for (int i = 0; i < 8000; i += 50) {
-                ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, chan, i));
-                ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, chan));
-                vTaskDelay(10 / portTICK_PERIOD_MS);
-            }
+    ledc_fade_func_install(ESP_INTR_FLAG_SHARED);
+    ledc_set_fade_with_time(LEDC_MODE, LEDC_BLUE_CHAN, 6000, 1000);
+    ledc_set_fade_with_time(LEDC_MODE, LEDC_GREEN_CHAN, 6000, 1000);
+    ledc_set_fade_with_time(LEDC_MODE, LEDC_RED_CHAN, 6000, 1000);
 
-            vTaskDelay(2000 / portTICK_PERIOD_MS);
-        }
+    ledc_fade_start(LEDC_MODE, LEDC_BLUE_CHAN, LEDC_FADE_WAIT_DONE); 
+    vTaskDelay(pdMS_TO_TICKS(1000));
 
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
+    ledc_fade_start(LEDC_MODE, LEDC_GREEN_CHAN, LEDC_FADE_WAIT_DONE); 
+    vTaskDelay(pdMS_TO_TICKS(1000));
 
-        ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_BLUE_CHAN, 0));
-        ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_GREEN_CHAN, 0));
-        ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_RED_CHAN, 0));
-        
-        ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_BLUE_CHAN));
-        ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_GREEN_CHAN));
-        ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_RED_CHAN));
-    }
+    ledc_fade_start(LEDC_MODE, LEDC_RED_CHAN, LEDC_FADE_WAIT_DONE); 
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    ledc_fade_func_uninstall();
 }
