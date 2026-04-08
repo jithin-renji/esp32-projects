@@ -11,14 +11,18 @@
 #define PIN_BOTTOM          18
 #define PIN_BOTTOM_RIGHT    21
 
+#define PIN_DOT             15
+#define BLINK_TIME          50
+
 #define BUTTON_PIN          13
 
 #define NUM_PINS            7
 
-static uint8_t pins[NUM_PINS] = {
+static uint8_t pins[] = {
     PIN_TOP_LEFT, PIN_TOP, PIN_TOP_RIGHT,
     PIN_MIDDLE,
-    PIN_BOTTOM_LEFT, PIN_BOTTOM, PIN_BOTTOM_RIGHT
+    PIN_BOTTOM_LEFT, PIN_BOTTOM, PIN_BOTTOM_RIGHT,
+    PIN_DOT
 };
 
 // Ignore the dot
@@ -31,12 +35,12 @@ uint8_t digits[] = {
 
 void blink(uint8_t pin)
 {
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         gpio_set_level(pin, 1);
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(BLINK_TIME));
 
         gpio_set_level(pin, 0);
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(BLINK_TIME));
     }
 }
 
@@ -72,7 +76,7 @@ void app_main(void)
 
     gpio_config(&io_conf);
 
-    for (int i = 0; i < NUM_PINS; i++) {
+    for (int i = 0; i < NUM_PINS + 1; i++) {
         gpio_reset_pin(pins[i]);
         gpio_set_direction(pins[i], GPIO_MODE_OUTPUT);
     }
@@ -87,6 +91,9 @@ void app_main(void)
         if (prev == 1 && current == 0) {
             vTaskDelay(pdMS_TO_TICKS(50));
             if (gpio_get_level(BUTTON_PIN) == 0) {
+                if (count + 1 > 9)
+                    blink(PIN_DOT);
+
                 count = (count + 1) % 10;
 
                 reset_display();
